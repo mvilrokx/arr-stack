@@ -30,7 +30,7 @@ create_media_dirs() {
 
 # Function to create appdata directories
 create_appdata_dirs() {
-    mkdir -p "$DOCKER_DIR"/appdata/{radarr,sonarr,bazarr,plex,prowlarr,pullio}
+    mkdir -p "$DOCKER_DIR"/appdata/{radarr,sonarr,bazarr,lidarr,readarr,plex,prowlarr,overseerr,tautulli,pullio,homepage}
     echo "Appdata directories created in $DOCKER_DIR/appdata"
 }
 
@@ -85,7 +85,7 @@ create_media_dirs
 # Always create appdata directories
 create_appdata_dirs
 
-# Always create appdata directories
+# Always create watch directory
 create_watch_dir
 
 # Create torrent directories if specified

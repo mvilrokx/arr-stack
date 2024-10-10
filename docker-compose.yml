@@ -12,23 +12,30 @@ services:
       - 6881:6881/udp
       - 8080:8080 # qbittorrent
       # - 9117:9117 # Jackett
-      # - 8989:8989 # Sonarr
-      # - 7878:7878 # Radarr
+      - 8989:8989 # Sonarr
+      - 7878:7878 # Radarr
+      - 8686:8686 # Lidarr
+      - 8787:8787 # Readarr
       # - 5055:5055 # Overseerr
-      # - 6767:6767 # Bazarr
+      - 8181:8181 # tautulli
+      - 6767:6767 # Bazarr
       # - 8191:8191 # FlareSolvarr
-      # - 9696:9696 # Prowlarr
+      - 9696:9696 # Prowlarr
       # - 32400:32400 # Plex
     volumes:
       - ${DOCKERCONFDIR}/gluetun:/gluetun
     environment:
       - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
       - VPN_TYPE=${VPN_TYPE}
+      - OPENVPN_USER=${OPENVPN_USER}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+      # - SERVER_HOSTNAMES=${SERVER_HOSTNAMES}
+      # - SERVER_REGIONS=Netherlands
       - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
       - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
       - TZ=${TZ}
-      - SERVER_CITIES=${SERVER_CITIES}
-      # - SERVER_REGIONS=${SERVER_REGIONS}
+      # - SERVER_CITIES=${SERVER_CITIES}
+      - SERVER_REGIONS=${SERVER_REGIONS}
       # - SERVER_CATEGORIES=${SERVER_CATEGORIES}
 
   qbittorrent:
@@ -58,3 +65,286 @@ services:
       - ${DOCKERSTORAGEDIR}/torrents:/data/torrents:rw
       - ${DOCKERSTORAGEDIR}/watch:/data/watch:rw
     restart: unless-stopped
+
+  # Index Manager
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    network_mode: service:gluetun
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    labels:
+      - homepage.group=*Arr
+      - homepage.name=Prowlar
+      - homepage.icon=prowlarr.svg
+      - homepage.href=http://prowlarr.home/
+      - homepage.description=Index Manager
+    #   - org.hotio.pullio.update=${PULLIO_UPDATE}
+    #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
+    #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
+    # ports:
+    #   - 9696:9696
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+      - ARGS=
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/prowlarr:/config:rw
+
+  # Movies
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    network_mode: service:gluetun
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    labels:
+      - homepage.group=*Arr
+      - homepage.name=Radarr
+      - homepage.icon=radarr.svg
+      - homepage.href=http://radarr.home/
+      - homepage.description=Movie Manager
+    #   - org.hotio.pullio.update=${PULLIO_UPDATE}
+    #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
+    #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
+    # ports:
+    #   - 7878:7878
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/radarr:/config
+      - ${DOCKERSTORAGEDIR}:/data
+   
+  # TV Series
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    network_mode: service:gluetun
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    labels:
+      - homepage.group=*Arr
+      - homepage.name=Sonarr
+      - homepage.icon=sonarr.svg
+      - homepage.href=http://sonarr.home/
+      - homepage.description=TV Series Manager
+    #   - org.hotio.pullio.update=${PULLIO_UPDATE}
+    #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
+    #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
+    # ports:
+    #   - 8989:8989
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/sonarr:/config
+      - ${DOCKERSTORAGEDIR}:/data   
+
+  # Music
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    network_mode: service:gluetun
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    labels:
+      - homepage.group=*Arr
+      - homepage.name=Lidarr
+      - homepage.icon=lidarr.svg
+      - homepage.href=http://lidarr.home/
+      - homepage.description=Music Manager
+    #   - org.hotio.pullio.update=${PULLIO_UPDATE}
+    #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
+    #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
+    # ports:
+    #   - 8686:8686
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/lidarr:/config
+      - ${DOCKERSTORAGEDIR}:/data
+      
+  # Books
+  readarr:
+    image: lscr.io/linuxserver/readarr:develop
+    container_name: readarr
+    network_mode: service:gluetun
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    labels:
+      - homepage.group=*Arr
+      - homepage.name=Readarr
+      - homepage.icon=readarr.svg
+      - homepage.href=http://readarr.home/
+      - homepage.description=Book Manager
+    #   - org.hotio.pullio.update=${PULLIO_UPDATE}
+    #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
+    #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
+    # ports:
+    #   - 8686:8686
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/readarr:/config
+      - ${DOCKERSTORAGEDIR}:/data
+
+  # Subtitles
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    network_mode: service:gluetun
+    restart: unless-stopped
+    labels:
+      - homepage.group=*Arr
+      - homepage.name=Bazarr
+      - homepage.icon=bazarr.svg
+      - homepage.href=http://bazarr.home/
+      - homepage.description=Subtitles Manager
+    environment:
+      - PUID=1000
+      - PGID=100
+      - TZ=America/Los_Angeles
+      - UMASK=002
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/bazarr:/config
+      - ${DOCKERSTORAGEDIR}:/data
+    # ports:
+    #   - 6767:6767
+
+  # Media Server
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    # network_mode: service:gluetun
+    network_mode: host
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    labels:
+      - homepage.group=Media
+      - homepage.name=Plex
+      - homepage.icon=plex.svg
+      - homepage.href=http://plex.home/
+      - homepage.description=Plex Media Manager Manager
+    #   - org.hotio.pullio.update=${PULLIO_UPDATE}
+    #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
+    #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
+    # ports:
+    #   - 32400:32400
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+      - VERSION=docker
+      # - PLEX_CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
+      - PLEX_CLAIM=${PLEX_CLAIM_TOKEN}
+      - PLEX_ADVERTISE_URL=${PLEX_ADVERTISE_URL}
+      - PLEX_NO_AUTH_NETWORKS=
+      - PLEX_BETA_INSTALL=${PLEX_BETA_INSTALL}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/plex:/config:rw
+      - ${DOCKERSTORAGEDIR}/media:/data/media:rw
+    devices:                                        # optional: if you have a Syno with an Intel CPU with quicksync and want hardware transcoding (only with Plex Pass) uncomment this line.
+      - /dev/dri:/dev/dri                           # optional: if you have a Syno with an Intel CPU with quicksync and want hardware transcoding (only with Plex Pass) uncomment this line.
+    tmpfs:                                          # optional: if you have a Syno with enough RAM, you can uncomment this line to enable transcoding in RAM. uncomment this line.
+      - /transcode                                  # optional: if you have a Syno with enough RAM, you can uncomment this line to enable transcoding in RAM. uncomment this line.
+      
+  overseerr:
+    image: lscr.io/linuxserver/overseerr:latest
+    container_name: overseerr
+    # network_mode: service:gluetun
+    restart: unless-stopped
+    labels:
+      - homepage.group=*Arr
+      - homepage.name=Overseerr
+      - homepage.icon=overseerr.svg
+      - homepage.href=http://overseerr.home/
+      - homepage.description=Request Manager
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/overseerr:/config
+      - ${DOCKERSTORAGEDIR}:/data
+    ports:
+      - 5055:5055
+
+  tautulli:
+    image: lscr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    network_mode: service:gluetun
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+    volumes:
+      - ${DOCKERCONFDIR}/tautulli:/config
+    # ports:
+    #   - 8181:8181
+    
+  # dashboard for your server
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    environment:
+      # Homepage has to run as root for auto-discovery to work
+      # - PUID=${PUID}
+      # - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+    ports:
+      - 3000:3000
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/homepage:/app/config # Make sure your local config directory exists
+      - /var/run/docker.sock:/var/run/docker.sock:ro # optional, for docker integrations
