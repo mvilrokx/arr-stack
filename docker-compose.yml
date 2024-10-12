@@ -7,21 +7,24 @@ services:
       - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
+    # If you decide to put a (docker) service on the gluetun network, you need
+    # to add it's port here to be able to access it. It is however recommended
+    # to only put your downloader (qbittorrent here) on the gluetun network.
     ports:
       - 6881:6881
       - 6881:6881/udp
       - 8080:8080 # qbittorrent
       # - 9117:9117 # Jackett
-      - 8989:8989 # Sonarr
-      - 7878:7878 # Radarr
-      - 8686:8686 # Lidarr
-      - 8787:8787 # Readarr
+      # - 8989:8989 # Sonarr
+      # - 7878:7878 # Radarr
+      # - 8686:8686 # Lidarr
+      # - 8787:8787 # Readarr
       # - 5055:5055 # Overseerr
-      - 8181:8181 # tautulli
-      - 6767:6767 # Bazarr
-      # - 8191:8191 # FlareSolvarr
-      - 9696:9696 # Prowlarr
+      # - 8181:8181 # tautulli
+      # - 6767:6767 # Bazarr
+      # - 9696:9696 # Prowlarr
       # - 32400:32400 # Plex
+      # - 3000:3000 # Homepage
     volumes:
       - ${DOCKERCONFDIR}/gluetun:/gluetun
     environment:
@@ -47,6 +50,16 @@ services:
       options:
         max-file: ${DOCKERLOGGING_MAXFILE}
         max-size: ${DOCKERLOGGING_MAXSIZE}
+    labels:
+      - homepage.group=Downloads
+      - homepage.name=qBittorrent
+      - homepage.icon=qbittorrent.svg
+      - homepage.href=https://qbittorrent.${HOSTNAME}
+      - homepage.description=Torrent Client
+      - homepage.widget.type=qbittorrent
+      - homepage.widget.url=https://qbittorrent.${HOSTNAME}
+      - homepage.widget.username=${QBITTORRENT_USENAME}
+      - homepage.widget.password=${QBITTORRENT_PASSWORD}
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -70,7 +83,7 @@ services:
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
-    network_mode: service:gluetun
+    # network_mode: service:gluetun
     restart: unless-stopped
     logging:
       driver: json-file
@@ -81,13 +94,16 @@ services:
       - homepage.group=*Arr
       - homepage.name=Prowlar
       - homepage.icon=prowlarr.svg
-      - homepage.href=http://prowlarr.home/
+      - homepage.href=https://prowlarr.${HOSTNAME}
       - homepage.description=Index Manager
+      - homepage.widget.type=prowlarr
+      - homepage.widget.url=https://prowlarr.${HOSTNAME}
+      - homepage.widget.key=${PROWLARR_API_KEY}
     #   - org.hotio.pullio.update=${PULLIO_UPDATE}
     #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
     #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
-    # ports:
-    #   - 9696:9696
+    ports:
+      - 9696:9696
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -102,7 +118,7 @@ services:
   radarr:
     image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
-    network_mode: service:gluetun
+    # network_mode: service:gluetun
     restart: unless-stopped
     logging:
       driver: json-file
@@ -113,13 +129,16 @@ services:
       - homepage.group=*Arr
       - homepage.name=Radarr
       - homepage.icon=radarr.svg
-      - homepage.href=http://radarr.home/
+      - homepage.href=https://radarr.${HOSTNAME}
       - homepage.description=Movie Manager
+      - homepage.widget.type=radarr
+      - homepage.widget.url=https://radarr.${HOSTNAME}
+      - homepage.widget.key=${RADARR_API_KEY}
     #   - org.hotio.pullio.update=${PULLIO_UPDATE}
     #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
     #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
-    # ports:
-    #   - 7878:7878
+    ports:
+      - 7878:7878
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -134,7 +153,7 @@ services:
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
-    network_mode: service:gluetun
+    # network_mode: service:gluetun
     restart: unless-stopped
     logging:
       driver: json-file
@@ -145,13 +164,16 @@ services:
       - homepage.group=*Arr
       - homepage.name=Sonarr
       - homepage.icon=sonarr.svg
-      - homepage.href=http://sonarr.home/
+      - homepage.href=https://sonarr.${HOSTNAME}
       - homepage.description=TV Series Manager
+      - homepage.widget.type=sonarr
+      - homepage.widget.url=https://sonarr.${HOSTNAME}
+      - homepage.widget.key=${SONARR_API_KEY}
     #   - org.hotio.pullio.update=${PULLIO_UPDATE}
     #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
     #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
-    # ports:
-    #   - 8989:8989
+    ports:
+      - 8989:8989
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -166,7 +188,7 @@ services:
   lidarr:
     image: lscr.io/linuxserver/lidarr:latest
     container_name: lidarr
-    network_mode: service:gluetun
+    # network_mode: service:gluetun
     restart: unless-stopped
     logging:
       driver: json-file
@@ -177,13 +199,16 @@ services:
       - homepage.group=*Arr
       - homepage.name=Lidarr
       - homepage.icon=lidarr.svg
-      - homepage.href=http://lidarr.home/
+      - homepage.href=https://lidarr.${HOSTNAME}
       - homepage.description=Music Manager
+      - homepage.widget.type=lidarr
+      - homepage.widget.url=https://lidarr.${HOSTNAME}
+      - homepage.widget.key=${LIDARR_API_KEY}
     #   - org.hotio.pullio.update=${PULLIO_UPDATE}
     #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
     #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
-    # ports:
-    #   - 8686:8686
+    ports:
+      - 8686:8686
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -198,7 +223,7 @@ services:
   readarr:
     image: lscr.io/linuxserver/readarr:develop
     container_name: readarr
-    network_mode: service:gluetun
+    # network_mode: service:gluetun
     restart: unless-stopped
     logging:
       driver: json-file
@@ -209,13 +234,16 @@ services:
       - homepage.group=*Arr
       - homepage.name=Readarr
       - homepage.icon=readarr.svg
-      - homepage.href=http://readarr.home/
+      - homepage.href=https://readarr.${HOSTNAME}
       - homepage.description=Book Manager
+      - homepage.widget.type=readarr
+      - homepage.widget.url=https://readarr.${HOSTNAME}
+      - homepage.widget.key=${READARR_API_KEY}
     #   - org.hotio.pullio.update=${PULLIO_UPDATE}
     #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
     #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
-    # ports:
-    #   - 8686:8686
+    ports:
+      - 8787:8787
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -230,14 +258,17 @@ services:
   bazarr:
     image: lscr.io/linuxserver/bazarr:latest
     container_name: bazarr
-    network_mode: service:gluetun
+    # network_mode: service:gluetun
     restart: unless-stopped
     labels:
       - homepage.group=*Arr
       - homepage.name=Bazarr
       - homepage.icon=bazarr.svg
-      - homepage.href=http://bazarr.home/
+      - homepage.href=https://bazarr.${HOSTNAME}
       - homepage.description=Subtitles Manager
+      - homepage.widget.type=bazarr
+      - homepage.widget.url=https://bazarr.${HOSTNAME}
+      - homepage.widget.key=${BAZARR_API_KEY}
     environment:
       - PUID=1000
       - PGID=100
@@ -247,8 +278,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${DOCKERCONFDIR}/bazarr:/config
       - ${DOCKERSTORAGEDIR}:/data
-    # ports:
-    #   - 6767:6767
+    ports:
+      - 6767:6767
 
   # Media Server
   plex:
@@ -266,8 +297,11 @@ services:
       - homepage.group=Media
       - homepage.name=Plex
       - homepage.icon=plex.svg
-      - homepage.href=http://plex.home/
+      - homepage.href=https://plex.${HOSTNAME}
       - homepage.description=Plex Media Manager Manager
+      - homepage.widget.type=plex
+      - homepage.widget.url=https://plex.${HOSTNAME}
+      - homepage.widget.key=${PLEX_API_KEY}
     #   - org.hotio.pullio.update=${PULLIO_UPDATE}
     #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
     #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
@@ -298,12 +332,20 @@ services:
     container_name: overseerr
     # network_mode: service:gluetun
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
     labels:
       - homepage.group=*Arr
       - homepage.name=Overseerr
       - homepage.icon=overseerr.svg
-      - homepage.href=http://overseerr.home/
+      - homepage.href=https://overseerr.${HOSTNAME}
       - homepage.description=Request Manager
+      - homepage.widget.type=overseerr
+      - homepage.widget.url=https://overseerr.${HOSTNAME}
+      - homepage.widget.key=${OVERSEERR_API_KEY}
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -319,8 +361,13 @@ services:
   tautulli:
     image: lscr.io/linuxserver/tautulli:latest
     container_name: tautulli
-    network_mode: service:gluetun
+    # network_mode: service:gluetun
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -328,14 +375,20 @@ services:
       - UMASK=002
     volumes:
       - ${DOCKERCONFDIR}/tautulli:/config
-    # ports:
-    #   - 8181:8181
+    ports:
+      - 8181:8181
     
   # dashboard for your server
   homepage:
     image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
+    # network_mode: service:gluetun
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
     environment:
       # Homepage has to run as root for auto-discovery to work
       # - PUID=${PUID}

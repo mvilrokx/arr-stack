@@ -96,6 +96,23 @@ https://wiki.bazarr.media/Getting-Started/Setup-Guide/
 
 Go to plex.tv/claim and login with your account, copy the claim code and add it "claim-xxxxxxxxxxxxxxxxxxxx". When starting the new plex server for the first time, the server will be added to your account.
 
+## Homepage
+
+In order for Homepage's auto-discovery to work I had to make a few changes.
+
+First I had to add (or uncomment) the following in Homepage's `docker.yaml` file:
+
+```yaml
+my-docker:
+  socket: /var/run/docker.sock
+```
+
+I also had to comment everything else out in  Homepage's `services.yaml` file.
+
+Finally, make sure you have the correct labels and `- /var/run/docker.sock:/var/run/docker.sock:ro` in volumes for Homepage.
+
+See [here](https://gethomepage.dev/configs/docker/#using-docker-socket-proxy) for more details.
+
 ## Start
 
 ```shell
