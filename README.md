@@ -60,6 +60,7 @@ sudo docker-compose up -d
 ```
 
 ## Verify your VPN
+
 ```shell
 sudo docker run --rm --network=container:gluetun alpine:3.20 sh -c "apk add wget && wget -qO- https://ipinfo.io"
 ```
@@ -241,6 +242,11 @@ When users login to their Tailscale account, the should be presented with (at le
 
 Go to Overseerr's [Users](https://overseerr.nas.lan/users) and Import Plex Users
 
+## Enable zsh and oh-my-zsh
+
+https://3os.org/infrastructure/synology/Install-oh-my-zsh/#change-the-default-shell-to-zsh
+
+https://www.reddit.com/r/synology/comments/991lg1/comment/ldxcola/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
 ## Resources
 * https://www.synoforum.com/resources/ultimate-starter-page-2-jellyfin-jellyseerr-nzbget-torrents-and-arr-media-library-stack.185/
@@ -250,3 +256,5 @@ Go to Overseerr's [Users](https://overseerr.nas.lan/users) and Import Plex Users
 * https://yams.media/
 * https://mullvad.net/en/account/wireguard-config
 * https://dr-b.io/post/Synology-DSM-7-with-Lets-Encrypt-and-DNS-Challenge
+* https://www.reddit.com/r/synology/comments/991lg1/comment/ldxcola/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+* https://3os.org/infrastructure/synology/Install-oh-my-zsh/#change-the-default-shell-to-zsh
