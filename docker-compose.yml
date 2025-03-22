@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 services:
   gluetun:
     image: qmcgaw/gluetun
@@ -44,7 +44,7 @@ services:
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent
     container_name: qbittorrent
-    network_mode: "service:gluetun"
+    network_mode: 'service:gluetun'
     logging:
       driver: json-file
       options:
@@ -58,7 +58,7 @@ services:
       - homepage.description=Torrent Client
       - homepage.widget.type=qbittorrent
       - homepage.widget.url=https://qbittorrent.${HOSTNAME}
-      - homepage.widget.username=${QBITTORRENT_USENAME}
+      - homepage.widget.username=${QBITTORRENT_USERNAME}
       - homepage.widget.password=${QBITTORRENT_PASSWORD}
     environment:
       - PUID=${PUID}
@@ -66,9 +66,9 @@ services:
       - TZ=${TZ}
       - UMASK=022
       - PRIVOXY_ENABLED=${QBITTORRENT_ENABLE_PRIVOXY}
-      - WEBUI_PORTS=${QBITTORRENT_WEBUI_PORT}/tcp,${QBITTORRENT_WEBUI_PORT}/udp  # Optional only needed if you want to change the default 8080 WebUI port
+      - WEBUI_PORTS=${QBITTORRENT_WEBUI_PORT}/tcp,${QBITTORRENT_WEBUI_PORT}/udp # Optional only needed if you want to change the default 8080 WebUI port
     healthcheck: # https://github.com/qdm12/gluetun/issues/641#issuecomment-933856220
-      test: "curl -sf https://1.1.1.1/  || exit 1"
+      test: 'curl -sf https://1.1.1.1/  || exit 1'
       interval: 1m
       timeout: 10s
       retries: 1
@@ -78,6 +78,42 @@ services:
       - ${DOCKERSTORAGEDIR}/torrents:/data/torrents:rw
       - ${DOCKERSTORAGEDIR}/watch:/data/watch:rw
     restart: unless-stopped
+
+  sabnzbd:
+    container_name: sabnzbd
+    image: lscr.io/linuxserver/sabnzbd:latest
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    labels:
+      - homepage.group=Downloads
+      - homepage.name=sabnzbd
+      - homepage.icon=sabnzbd.svg
+      - homepage.href=https://sabnzbd.${HOSTNAME}
+      - homepage.description=Usenet (nzb) Client
+      - homepage.widget.type=sabnzbd
+      - homepage.widget.url=https://sabnzbd.${HOSTNAME}
+      - homepage.widget.key=${SABNZBD_API_KEY}
+      # - homepage.widget.username=${QBITTORRENT_USERNAME}
+      # - homepage.widget.password=${QBITTORRENT_PASSWORD}
+    #   - org.hotio.pullio.update=${PULLIO_UPDATE}
+    #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
+    #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
+    ports:
+      - 8090:8080
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+      - WEBUI_PORTS=8080/tcp,8080/udp
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/sabnzbd:/config
+      - ${DOCKERSTORAGEDIR}/usenet:/data/usenet:rw
 
   # Index Manager
   prowlarr:
@@ -148,7 +184,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${DOCKERCONFDIR}/radarr:/config
       - ${DOCKERSTORAGEDIR}:/data
-   
+
   # TV Series
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
@@ -182,7 +218,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DOCKERCONFDIR}/sonarr:/config
-      - ${DOCKERSTORAGEDIR}:/data   
+      - ${DOCKERSTORAGEDIR}:/data
 
   # Music
   lidarr:
@@ -218,7 +254,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${DOCKERCONFDIR}/lidarr:/config
       - ${DOCKERSTORAGEDIR}:/data
-      
+
   # Books
   readarr:
     image: lscr.io/linuxserver/readarr:develop
@@ -322,11 +358,11 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${DOCKERCONFDIR}/plex:/config:rw
       - ${DOCKERSTORAGEDIR}/media:/data/media:rw
-    devices:                                        # optional: if you have a Syno with an Intel CPU with quicksync and want hardware transcoding (only with Plex Pass) uncomment this line.
-      - /dev/dri:/dev/dri                           # optional: if you have a Syno with an Intel CPU with quicksync and want hardware transcoding (only with Plex Pass) uncomment this line.
-    tmpfs:                                          # optional: if you have a Syno with enough RAM, you can uncomment this line to enable transcoding in RAM. uncomment this line.
-      - /transcode                                  # optional: if you have a Syno with enough RAM, you can uncomment this line to enable transcoding in RAM. uncomment this line.
-      
+    devices: # optional: if you have a Syno with an Intel CPU with quicksync and want hardware transcoding (only with Plex Pass) uncomment this line.
+      - /dev/dri:/dev/dri # optional: if you have a Syno with an Intel CPU with quicksync and want hardware transcoding (only with Plex Pass) uncomment this line.
+    tmpfs: # optional: if you have a Syno with enough RAM, you can uncomment this line to enable transcoding in RAM. uncomment this line.
+      - /transcode # optional: if you have a Syno with enough RAM, you can uncomment this line to enable transcoding in RAM. uncomment this line.
+
   overseerr:
     image: lscr.io/linuxserver/overseerr:latest
     container_name: overseerr
@@ -357,6 +393,25 @@ services:
       - ${DOCKERSTORAGEDIR}:/data
     ports:
       - 5055:5055
+  recyclarr:
+    image: ghcr.io/recyclarr/recyclarr
+    container_name: recyclarr
+    user: ${PUID}:${PGID}
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    environment:
+      # This does not work, setting user above does
+      # - PUID=${PUID}
+      # - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK=002
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/recyclarr:/config
 
   tautulli:
     image: lscr.io/linuxserver/tautulli:latest
@@ -368,6 +423,18 @@ services:
       options:
         max-file: ${DOCKERLOGGING_MAXFILE}
         max-size: ${DOCKERLOGGING_MAXSIZE}
+    labels:
+      - homepage.group=*Arr
+      - homepage.name=Tautulli
+      - homepage.icon=tautulli.svg
+      - homepage.href=https://tautulli.${HOSTNAME}
+      - homepage.description=Monitoring and tracking tool for Plex Media Server.
+      - homepage.widget.type=tautulli
+      - homepage.widget.url=https://tautulli.${HOSTNAME}
+      - homepage.widget.key=${TAUTULLI_API_KEY}
+      - homepage.widget.enableUser=true
+      - homepage.widget.showEpisodeNumber=true
+      - homepage.widget.expandOneStreamToTwoRows=false # optional, defaults to true
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -377,7 +444,7 @@ services:
       - ${DOCKERCONFDIR}/tautulli:/config
     ports:
       - 8181:8181
-    
+
   # dashboard for your server
   homepage:
     image: ghcr.io/gethomepage/homepage:latest
@@ -393,6 +460,7 @@ services:
       # Homepage has to run as root for auto-discovery to work
       # - PUID=${PUID}
       # - PGID=${PGID}
+      - HOMEPAGE_ALLOWED_HOSTS=home.vilrokx.com
       - TZ=${TZ}
       - UMASK=002
     ports:

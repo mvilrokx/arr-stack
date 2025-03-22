@@ -2,7 +2,7 @@
 
 ## Install VS Code Server
 
-https://code.visualstudio.com/docs/remote/ssh
+<https://code.visualstudio.com/docs/remote/ssh>
 
 This makes it easier to edit files on your Synology in VS Code
 
@@ -16,12 +16,13 @@ Add the following to the bottom of this file (replace `mvilrokx` with your usern
 
 ```
 Match User mvilrokx
-	AllowTcpForwarding yes
+ AllowTcpForwarding yes
 ```
 
 Safe the file and restart SSH (disable in DSM, and then re-enable)
 
 ## Prepare Synology
+
 I basically followed [this guide](https://trash-guides.info/Hardlinks/How-to-setup-for/Synology/), specifically:
 
 * [Install Docker](https://trash-guides.info/Hardlinks/How-to-setup-for/Synology/#install-docker)
@@ -39,10 +40,11 @@ sudo chown -R docker:users /volume1/data /volume1/docker
 sudo chmod -R a=,a+rX,u+w,g+w /volume1/data /volume1/docker
 ```
 
-> You will have to run these 2 commands every time you add a folder (e.g. when you add a new *arr app)
+> ⚠️ You will have to run these 2 commands every time you add a folder (e.g. when you add a new *arr app)
 
 ### Enable Wireguard
-From https://www.blackvoid.club/wireguard-spk-for-your-synology-nas/
+
+From <https://www.blackvoid.club/wireguard-spk-for-your-synology-nas/>
 
 run the following commands (for DSM 7.2):
 
@@ -65,22 +67,27 @@ sudo docker-compose up -d
 sudo docker run --rm --network=container:gluetun alpine:3.20 sh -c "apk add wget && wget -qO- https://ipinfo.io"
 ```
 
-+
+*
 
-https://ipleak.net/
+<https://ipleak.net/>
 
 ## Configure qBittorent
+
 Change download installation to `/data/torrents` (or whatever folders you created earlier in the setup)
 
 Tools -> Options -> Downloads -> Default Save Path: /data/torrents
 Tools -> Options -> Downloads -> Monitored Folder: /data/watch
 
 Make sure you setup categories:
-https://trash-guides.info/Downloaders/qBittorrent/How-to-add-categories/
+<https://trash-guides.info/Downloaders/qBittorrent/How-to-add-categories/>
+
+## Configure sabnzbd
+
+<https://trash-guides.info/Downloaders/SABnzbd/Basic-Setup/>
 
 ## Configure Prowlarr
 
-1. Add indexes (see https://www.synoforum.com/resources/ultimate-starter-page-2-jellyfin-jellyseerr-nzbget-torrents-and-arr-media-library-stack.185/
+1. Add indexes (see <https://www.synoforum.com/resources/ultimate-starter-page-2-jellyfin-jellyseerr-nzbget-torrents-and-arr-media-library-stack.185/>
 )
 1. Add Applications (Radarr, Sonarr ...)
 
@@ -91,7 +98,7 @@ https://trash-guides.info/Downloaders/qBittorrent/How-to-add-categories/
 
 ## Configure Bazarr (Subtitles)
 
-https://wiki.bazarr.media/Getting-Started/Setup-Guide/
+<https://wiki.bazarr.media/Getting-Started/Setup-Guide/>
 
 ## Plex
 
@@ -126,7 +133,7 @@ This Docker-compose command helps builds the image, then creates and starts Dock
 
 ```shell
 sudo docker-compose down
-``` 
+```
 
 This Docker-compose down command also stops Docker containers like the stop command does. But it goes the extra mile. Docker-compose down, doesn’t just stop the containers, it also removes them.
 
@@ -134,7 +141,7 @@ This Docker-compose down command also stops Docker containers like the stop comm
 
 ```shell
 sudo docker system prune -a --volumes --force
-``` 
+```
 
 Remove all unused containers, networks, images (both dangling and unreferenced), and optionally, volumes.
 
@@ -143,21 +150,21 @@ Remove all unused containers, networks, images (both dangling and unreferenced),
 You'll need to point all requests for your domain names you want to use, to the synology's IP address. This will hit synology's reverse proxy, which you then need to configure to foreward these requests to the proper service. Since I have a Firewalla, the first part is done on there, as Custom DNS Rules in Services, but it can be done of course on any DNS service (PiHole, AdGuard Home ...). The second part you do on the Synology NAS, in the Control Panel, go to the Login Portal, select the Advanced tab and then the Reverse Proxy button. Create an entry for each service, using the domain name you entered in your DNS, and point it to the port on which your dockerized service is available. Assuming the default ports for your Services and an IP address of `192.168.0.10` for your Synology, it would look like this:
 
 ```plaintext
-   ┌──Firewalla─────────────────────────────────────────┐      ┌──Synology──────────────────────────────────────────────────────────┐                 
-   │                                                    │      │                                                                    │                 
-   │                                                    │      │                                                                    │                 
-   │  ┌──Custom─DNS─Rules────────────────────────────┐  │      │  ┌──Reverse─Proxy────────────────────────────┐     ┌──Docker────┐  │                 
-   │  │                                              │  │      │  │                                           │     │            │  │                 
-   │  │                                              │  │      │  │                                           │     │            │  │                 
-   │  │  https://plex.nas.lan      ──► 192.168.0.10  │  │      │  │ plex.nas.lan:443      ──► localhost:32400 ├─────► Plex       │  │                 
-   │  │                                              │  │      │  │                                           │     │            │  │                 
-   │  │  https://portainer.nas.lan ──► 192.168.0.10  │  │ ───► │  │ portainer.nas.lan:443 ──► localhost:9000  ├─────► Portainer  │  │                 
-   │  │                                              │  │      │  │                                           │     │            │  │                 
-   │  │  https://homepage.nas.lan  ──► 192.168.0.10  │  │      │  │ homepage.nas.lan:443  ──► localhost:3000  ├─────► Homepage   │  │                 
-   │  │                                              │  │      │  │                                           │     │            │  │                 
-   │  └──────────────────────────────────────────────┘  │      │  └───────────────────────────────────────────┘     └────────────┘  │                 
-   │                                                    │      │                                                                    │                 
-   └────────────────────────────────────────────────────┘      └────────────────────────────────────────────────────────────────────┘                 
+   ┌──Firewalla─────────────────────────────────────────┐      ┌──Synology──────────────────────────────────────────────────────────┐
+   │                                                    │      │                                                                    │
+   │                                                    │      │                                                                    │
+   │  ┌──Custom─DNS─Rules────────────────────────────┐  │      │  ┌──Reverse─Proxy────────────────────────────┐     ┌──Docker────┐  │
+   │  │                                              │  │      │  │                                           │     │            │  │
+   │  │                                              │  │      │  │                                           │     │            │  │
+   │  │  https://plex.nas.lan      ──► 192.168.0.10  │  │      │  │ plex.nas.lan:443      ──► localhost:32400 ├─────► Plex       │  │
+   │  │                                              │  │      │  │                                           │     │            │  │
+   │  │  https://portainer.nas.lan ──► 192.168.0.10  │  │ ───► │  │ portainer.nas.lan:443 ──► localhost:9000  ├─────► Portainer  │  │
+   │  │                                              │  │      │  │                                           │     │            │  │
+   │  │  https://homepage.nas.lan  ──► 192.168.0.10  │  │      │  │ homepage.nas.lan:443  ──► localhost:3000  ├─────► Homepage   │  │
+   │  │                                              │  │      │  │                                           │     │            │  │
+   │  └──────────────────────────────────────────────┘  │      │  └───────────────────────────────────────────┘     └────────────┘  │
+   │                                                    │      │                                                                    │
+   └────────────────────────────────────────────────────┘      └────────────────────────────────────────────────────────────────────┘
 ```
 
 Just keep adding entries as you extend your Services.
@@ -223,12 +230,11 @@ Go to the Control Panel and Task Scheduler. Click Create and select Scheduled Ta
 
 ## Enable Tailscale DNS Splitting
 
-In order to be able to access all devices on your network without having to install tailscale on all of those devices, you need to enable the Subnet Router on Tailscale on the device on which you did install Tailscale. In my case, that device is the Synology NAS. 
+In order to be able to access all devices on your network without having to install tailscale on all of those devices, you need to enable the Subnet Router on Tailscale on the device on which you did install Tailscale. In my case, that device is the Synology NAS.
 
-Make sure you are connected to your Tailscale network, then open Tailscale on your Synology. It should show your Devices and Settings. Under settings you can Advertise new routes. Enter a subnet in CIDR notation to make all those IP addresses available on the Tailscale network. In my case, my IP addresses are 192.168.19.x, which I can represent as a CIDR block with 192.168.19.0/24. After advertising these, you will need to _approve_ this range in the Tailscale Admin Webpage. Go to your [list of machines](https://login.tailscale.com/admin/machines), and you should see a "subnet" tag under your synology (or whichever devices is advertising your IP range). Go to the 3 dots and select "Edit route settings...". You should see subnet and you should be able to approve it (Select the checkbox). 
+Make sure you are connected to your Tailscale network, then open Tailscale on your Synology. It should show your Devices and Settings. Under settings you can Advertise new routes. Enter a subnet in CIDR notation to make all those IP addresses available on the Tailscale network. In my case, my IP addresses are 192.168.19.x, which I can represent as a CIDR block with 192.168.19.0/24. After advertising these, you will need to _approve_ this range in the Tailscale Admin Webpage. Go to your [list of machines](https://login.tailscale.com/admin/machines), and you should see a "subnet" tag under your synology (or whichever devices is advertising your IP range). Go to the 3 dots and select "Edit route settings...". You should see subnet and you should be able to approve it (Select the checkbox).
 
 Now we need to make some changes to the tailscale DNS, so go to your [tailscale DNS settings](https://login.tailscale.com/admin/dns). First we will add a Global nameserver, pick Cloudflare Public DNS (I am actually not 100% sure this is required). This guarantees that all devices on the tailscale network will use this as their DNS. Then you want to set "Override local DNS". Finally you need to add a Custom Nameserver. Add your local DNS server's IP address as the nameserver. For me, this is my Firewalla, so I set it to `192.168.19.1`.  Then you need to enable Split DNS by enabling Restrict to domain, and set the domain to your local domain name, in my case `nas.lan`. This will route all request to `nas.lan` through the local DNS server (`192.168.19.1`), and since this was setup earlier to forward e.g. `plex.nas.lan` to my synology reverse proxy, that is what will happen. the reverse proxy will then forward this to the correct service and port (also setup earlier). So this now allows you to access your services with the same domain name from Tailscale or on your LAN locally.
-
 
 This [video](https://www.youtube.com/watch?v=Uzcs97XcxiE&ab_channel=KTZSystems) was very helpful.
 
@@ -238,23 +244,24 @@ Tell your users to install Tailscale and Plex
 Invite users to your Plex and Tailscale network
 Tell users to accept the Plex and Tailscale invite and finish creating their account
 
-When users login to their Tailscale account, the should be presented with (at least) 2 network options: their own tailscale network and the one you invited them to (mvilrokx@gmail.com tailscale), tell them to pick the latter.
+When users login to their Tailscale account, the should be presented with (at least) 2 network options: their own tailscale network and the one you invited them to (<mvilrokx@gmail.com> tailscale), tell them to pick the latter.
 
 Go to Overseerr's [Users](https://overseerr.nas.lan/users) and Import Plex Users
 
 ## Enable zsh and oh-my-zsh
 
-https://3os.org/infrastructure/synology/Install-oh-my-zsh/#change-the-default-shell-to-zsh
+<https://3os.org/infrastructure/synology/Install-oh-my-zsh/#change-the-default-shell-to-zsh>
 
-https://www.reddit.com/r/synology/comments/991lg1/comment/ldxcola/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+<https://www.reddit.com/r/synology/comments/991lg1/comment/ldxcola/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button>
 
 ## Resources
-* https://www.synoforum.com/resources/ultimate-starter-page-2-jellyfin-jellyseerr-nzbget-torrents-and-arr-media-library-stack.185/
-* https://github.com/TechHutTV/homelab/blob/main/media/arr-compose.yaml
-* https://github.com/qdm12/gluetun-wiki/blob/main/setup/providers/mullvad.md
-* https://trash-guides.info/Hardlinks/How-to-setup-for/Synology/
-* https://yams.media/
-* https://mullvad.net/en/account/wireguard-config
-* https://dr-b.io/post/Synology-DSM-7-with-Lets-Encrypt-and-DNS-Challenge
-* https://www.reddit.com/r/synology/comments/991lg1/comment/ldxcola/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
-* https://3os.org/infrastructure/synology/Install-oh-my-zsh/#change-the-default-shell-to-zsh
+
+* <https://www.synoforum.com/resources/ultimate-starter-page-2-jellyfin-jellyseerr-nzbget-torrents-and-arr-media-library-stack.185/>
+* <https://github.com/TechHutTV/homelab/blob/main/media/arr-compose.yaml>
+* <https://github.com/qdm12/gluetun-wiki/blob/main/setup/providers/mullvad.md>
+* <https://trash-guides.info/Hardlinks/How-to-setup-for/Synology/>
+* <https://yams.media/>
+* <https://mullvad.net/en/account/wireguard-config>
+* <https://dr-b.io/post/Synology-DSM-7-with-Lets-Encrypt-and-DNS-Challenge>
+* <https://www.reddit.com/r/synology/comments/991lg1/comment/ldxcola/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button>
+* <https://3os.org/infrastructure/synology/Install-oh-my-zsh/#change-the-default-shell-to-zsh>
