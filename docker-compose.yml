@@ -318,50 +318,49 @@ services:
       - 6767:6767
 
   # Media Server
-  plex:
-    image: lscr.io/linuxserver/plex:latest
-    container_name: plex
-    # network_mode: service:gluetun
-    network_mode: host
-    restart: unless-stopped
-    logging:
-      driver: json-file
-      options:
-        max-file: ${DOCKERLOGGING_MAXFILE}
-        max-size: ${DOCKERLOGGING_MAXSIZE}
-    labels:
-      - homepage.group=Media
-      - homepage.name=Plex
-      - homepage.icon=plex.svg
-      - homepage.href=https://plex.${HOSTNAME}
-      - homepage.description=Plex Media Manager Manager
-      - homepage.widget.type=plex
-      - homepage.widget.url=https://plex.${HOSTNAME}
-      - homepage.widget.key=${PLEX_API_KEY}
-    #   - org.hotio.pullio.update=${PULLIO_UPDATE}
-    #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
-    #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
-    # ports:
-    #   - 32400:32400
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-      - UMASK=002
-      - VERSION=docker
-      # - PLEX_CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
-      - PLEX_CLAIM=${PLEX_CLAIM_TOKEN}
-      - PLEX_ADVERTISE_URL=${PLEX_ADVERTISE_URL}
-      - PLEX_NO_AUTH_NETWORKS=
-      - PLEX_BETA_INSTALL=${PLEX_BETA_INSTALL}
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - ${DOCKERCONFDIR}/plex:/config:rw
-      - ${DOCKERSTORAGEDIR}/media:/data/media:rw
-    devices: # optional: if you have a Syno with an Intel CPU with quicksync and want hardware transcoding (only with Plex Pass) uncomment this line.
-      - /dev/dri:/dev/dri # optional: if you have a Syno with an Intel CPU with quicksync and want hardware transcoding (only with Plex Pass) uncomment this line.
-    tmpfs: # optional: if you have a Syno with enough RAM, you can uncomment this line to enable transcoding in RAM. uncomment this line.
-      - /transcode # optional: if you have a Syno with enough RAM, you can uncomment this line to enable transcoding in RAM. uncomment this line.
+  # plex:
+  #   image: lscr.io/linuxserver/plex:latest
+  #   container_name: plex
+  #   # network_mode: service:gluetun
+  #   network_mode: host
+  #   restart: unless-stopped
+  #   logging:
+  #     driver: json-file
+  #     options:
+  #       max-file: ${DOCKERLOGGING_MAXFILE}
+  #       max-size: ${DOCKERLOGGING_MAXSIZE}
+  #   labels:
+  #     - homepage.group=Media
+  #     - homepage.name=Plex
+  #     - homepage.icon=plex.svg
+  #     - homepage.href=https://plex.${HOSTNAME}
+  #     - homepage.description=Plex Media Manager Manager
+  #     - homepage.widget.type=plex
+  #     - homepage.widget.url=https://plex.${HOSTNAME}
+  #     - homepage.widget.key=${PLEX_API_KEY}
+  #   #   - org.hotio.pullio.update=${PULLIO_UPDATE}
+  #   #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
+  #   #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
+  #   # ports:
+  #   #   - 32400:32400
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${PGID}
+  #     - TZ=${TZ}
+  #     - UMASK=002
+  #     - VERSION=docker
+  #     - PLEX_CLAIM=${PLEX_CLAIM_TOKEN}
+  #     - PLEX_ADVERTISE_URL=${PLEX_ADVERTISE_URL}
+  #     - PLEX_NO_AUTH_NETWORKS=
+  #     - PLEX_BETA_INSTALL=${PLEX_BETA_INSTALL}
+  #   volumes:
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - ${DOCKERCONFDIR}/plex:/config:rw
+  #     - ${DOCKERSTORAGEDIR}/media:/data/media:rw
+  #   devices: # optional: if you have a Syno with an Intel CPU with quicksync and want hardware transcoding (only with Plex Pass) uncomment this line.
+  #     - /dev/dri:/dev/dri # optional: if you have a Syno with an Intel CPU with quicksync and want hardware transcoding (only with Plex Pass) uncomment this line.
+  #   tmpfs: # optional: if you have a Syno with enough RAM, you can uncomment this line to enable transcoding in RAM. uncomment this line.
+  #     - /transcode # optional: if you have a Syno with enough RAM, you can uncomment this line to enable transcoding in RAM. uncomment this line.
 
   overseerr:
     image: lscr.io/linuxserver/overseerr:latest
