@@ -91,7 +91,7 @@ Make sure you setup categories:
 )
 1. Add Applications (Radarr, Sonarr ...)
 
-## Configure Radarr, Sonarr. Readarr and Lidarr
+## Configure Radarr, Sonarr and Lidarr
 
 1. Add Download Client (qBittorent) in Settings
 1. Add the "Root Folder" in [Media Management](http://192.168.19.69:7878/settings/mediamanagement) in Settings
