@@ -260,6 +260,11 @@ services:
     container_name: bazarr
     # network_mode: service:gluetun
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
     labels:
       - homepage.group=*Arr
       - homepage.name=Bazarr
