@@ -274,9 +274,9 @@ services:
       - homepage.widget.url=https://bazarr.${HOSTNAME}
       - homepage.widget.key=${BAZARR_API_KEY}
     environment:
-      - PUID=1000
-      - PGID=100
-      - TZ=America/Los_Angeles
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
       - UMASK=002
     volumes:
       - /etc/localtime:/etc/localtime:ro
