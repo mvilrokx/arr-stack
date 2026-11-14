@@ -19,7 +19,7 @@ Match User mvilrokx
  AllowTcpForwarding yes
 ```
 
-Safe the file and restart SSH (disable in DSM, and then re-enable)
+Save the file and restart SSH (disable in DSM, and then re-enable)
 
 ## Prepare Synology
 
@@ -31,7 +31,7 @@ I basically followed [this guide](https://trash-guides.info/Hardlinks/How-to-set
 * [SSH](https://trash-guides.info/Hardlinks/How-to-setup-for/Synology/#ssh)
 * [Create Folder Structure](https://trash-guides.info/Hardlinks/How-to-setup-for/Synology/#create-folder-structure)
 
-For the last step, I created a shell script called `directories.sh` that you can run.
+For the last step, I created a shell script called `directories.sh` that you can run (`./directories.sh -h` shows the options).
 
 After you run the script, run the following commands to change permissions:
 
@@ -40,20 +40,17 @@ sudo chown -R docker:users /volume1/data /volume1/docker
 sudo chmod -R a=,a+rX,u+w,g+w /volume1/data /volume1/docker
 ```
 
-> ⚠️ You will have to run these 2 commands every time you add a folder (e.g. when you add a new *arr app)
+> ⚠️ When you add a folder later (e.g. when you add a new *arr app), run these 2 commands on the new folder only, e.g. `/volume1/docker/appdata/<app>`. `/volume1/docker` can also hold files of other containers, and `a+rX` makes everything in it readable for every user.
 
-### Enable Wireguard
+## Configure the environment
 
-From <https://www.blackvoid.club/wireguard-spk-for-your-synology-nas/>
+Copy `.example.env` to `.env`, then fill in the values marked `CHANGE` or `SET`. You get the API keys from each app after its first start.
 
-run the following commands (for DSM 7.2):
-
-```
-mkdir /volume1/docker/synowirespk72
-sudo docker run --rm --privileged --env PACKAGE_ARCH=geminilake --env DSM_VER=7.2 -v /volume1/docker/synowirespk72:/result_spk blackvoidclub/synobuild72
+```shell
+cp .example.env .env
 ```
 
-Then follow the rest of the guide ("Install and start the Wireguard SPK")
+> `.env` is in `.gitignore`. Never commit it: it holds your VPN key, passwords and API keys.
 
 ## Start
 
@@ -61,22 +58,30 @@ Then follow the rest of the guide ("Install and start the Wireguard SPK")
 sudo docker-compose up -d
 ```
 
+This creates and starts the containers for all the services in the compose file. If containers are already running, it only recreates the ones whose configuration or image changed.
+
+> I no longer run this by hand: a container management tool deploys this stack, checks for new images every week and redeploys the services that have one.
+
 ## Verify your VPN
 
+qBittorrent uses the network of the gluetun container, so all its traffic goes through the VPN. To see the public IP address that qBittorrent uses:
+
 ```shell
-sudo docker run --rm --network=container:gluetun alpine:3.20 sh -c "apk add wget && wget -qO- https://ipinfo.io"
+sudo docker exec qbittorrent curl -s https://ipinfo.io
 ```
 
-*
+The result must show your VPN provider, not your own internet provider. To check the torrent client itself for leaks, use the torrent address detection on <https://ipleak.net/>.
 
-<https://ipleak.net/>
+## Known issue: qBittorrent is down after a Container Manager restart
 
-## Configure qBittorent
+qBittorrent uses `network_mode: service:gluetun`, so gluetun must run first. When DSM restarts Container Manager (e.g. after an update), it can start qBittorrent before gluetun, and then qBittorrent fails. gluetun has `restart: always` to make this less likely. If qBittorrent is still down, start gluetun first, then qBittorrent.
 
-Change download installation to `/data/torrents` (or whatever folders you created earlier in the setup)
+## Configure qBittorrent
 
-Tools -> Options -> Downloads -> Default Save Path: /data/torrents
-Tools -> Options -> Downloads -> Monitored Folder: /data/watch
+Change the default download location to `/data/torrents` (or whatever folders you created earlier in the setup):
+
+* Tools -> Options -> Downloads -> Default Save Path: `/data/torrents`
+* Tools -> Options -> Downloads -> Monitored Folder: `/data/watch`
 
 Make sure you setup categories:
 <https://trash-guides.info/Downloaders/qBittorrent/How-to-add-categories/>
@@ -87,14 +92,13 @@ Make sure you setup categories:
 
 ## Configure Prowlarr
 
-1. Add indexes (see <https://www.synoforum.com/resources/ultimate-starter-page-2-jellyfin-jellyseerr-nzbget-torrents-and-arr-media-library-stack.185/>
-)
+1. Add indexers (see <https://www.synoforum.com/resources/ultimate-starter-page-2-jellyfin-jellyseerr-nzbget-torrents-and-arr-media-library-stack.185/>)
 1. Add Applications (Radarr, Sonarr ...)
 
 ## Configure Radarr, Sonarr and Lidarr
 
-1. Add Download Client (qBittorent) in Settings
-1. Add the "Root Folder" in [Media Management](http://192.168.19.69:7878/settings/mediamanagement) in Settings
+1. Add the Download Clients (qBittorrent, SABnzbd) in Settings -> Download Clients
+1. Add the "Root Folder" in Settings -> Media Management
 
 ## Configure Bazarr (Subtitles)
 
@@ -102,7 +106,7 @@ Make sure you setup categories:
 
 ## Plex
 
-Go to plex.tv/claim and login with your account, copy the claim code and add it "claim-xxxxxxxxxxxxxxxxxxxx". When starting the new plex server for the first time, the server will be added to your account.
+Plex is not part of this stack (for reasons). Overseerr and Tautulli connect to an existing Plex server.
 
 ## Homepage
 
@@ -115,19 +119,11 @@ my-docker:
   socket: /var/run/docker.sock
 ```
 
-I also had to comment everything else out in  Homepage's `services.yaml` file.
+I also had to comment everything else out in Homepage's `services.yaml` file.
 
 Finally, make sure you have the correct labels and `- /var/run/docker.sock:/var/run/docker.sock:ro` in volumes for Homepage.
 
 See [here](https://gethomepage.dev/configs/docker/#using-docker-socket-proxy) for more details.
-
-## Start
-
-```shell
-sudo docker-compose up -d
-```
-
-This Docker-compose command helps builds the image, then creates and starts Docker containers. The containers are from the services specified in the compose file. If the containers are already running and you run docker-compose up, it recreates the container.
 
 ## Stop
 
@@ -135,49 +131,94 @@ This Docker-compose command helps builds the image, then creates and starts Dock
 sudo docker-compose down
 ```
 
-This Docker-compose down command also stops Docker containers like the stop command does. But it goes the extra mile. Docker-compose down, doesn’t just stop the containers, it also removes them.
+This stops the containers and also removes them (and the stack's network). Your config and data stay in the appdata and data folders.
 
 ## Clean
 
 ```shell
-sudo docker system prune -a --volumes --force
+sudo docker image prune -a
 ```
 
-Remove all unused containers, networks, images (both dangling and unreferenced), and optionally, volumes.
+This removes all images that no container uses.
+
+> ⚠️ Do not use `docker system prune -a --volumes` for this. It works on the whole NAS, not only on this stack: it also removes every stopped container (of any stack), all unused networks and unused anonymous volumes.
 
 ## Setup Domain Names for LAN
 
-You'll need to point all requests for your domain names you want to use, to the synology's IP address. This will hit synology's reverse proxy, which you then need to configure to foreward these requests to the proper service. Since I have a Firewalla, the first part is done on there, as Custom DNS Rules in Services, but it can be done of course on any DNS service (PiHole, AdGuard Home ...). The second part you do on the Synology NAS, in the Control Panel, go to the Login Portal, select the Advanced tab and then the Reverse Proxy button. Create an entry for each service, using the domain name you entered in your DNS, and point it to the port on which your dockerized service is available. Assuming the default ports for your Services and an IP address of `192.168.0.10` for your Synology, it would look like this:
+You'll need to point all requests for the domain names you want to use to a reverse proxy, which then forwards each request to the proper service. The first part is done in your local DNS. Since I have a Firewalla, I do this there, as Custom DNS Rules in Services, but it can be done of course on any DNS service (Pi-hole, AdGuard Home ...). The second part you do on the reverse proxy: create an entry for each service, using the domain name you entered in your DNS, and point it to the IP address of the NAS and the port on which your dockerized service is available. It looks like this:
 
 ```plaintext
-   ┌──Firewalla─────────────────────────────────────────┐      ┌──Synology──────────────────────────────────────────────────────────┐
-   │                                                    │      │                                                                    │
-   │                                                    │      │                                                                    │
-   │  ┌──Custom─DNS─Rules────────────────────────────┐  │      │  ┌──Reverse─Proxy────────────────────────────┐     ┌──Docker────┐  │
-   │  │                                              │  │      │  │                                           │     │            │  │
-   │  │                                              │  │      │  │                                           │     │            │  │
-   │  │  https://plex.nas.lan      ──► 192.168.0.10  │  │      │  │ plex.nas.lan:443      ──► localhost:32400 ├─────► Plex       │  │
-   │  │                                              │  │      │  │                                           │     │            │  │
-   │  │  https://portainer.nas.lan ──► 192.168.0.10  │  │ ───► │  │ portainer.nas.lan:443 ──► localhost:9000  ├─────► Portainer  │  │
-   │  │                                              │  │      │  │                                           │     │            │  │
-   │  │  https://homepage.nas.lan  ──► 192.168.0.10  │  │      │  │ homepage.nas.lan:443  ──► localhost:3000  ├─────► Homepage   │  │
-   │  │                                              │  │      │  │                                           │     │            │  │
-   │  └──────────────────────────────────────────────┘  │      │  └───────────────────────────────────────────┘     └────────────┘  │
-   │                                                    │      │                                                                    │
-   └────────────────────────────────────────────────────┘      └────────────────────────────────────────────────────────────────────┘
+   ┌──Local DNS───────────────────────────────┐      ┌──Reverse Proxy──────────────────────────────┐      ┌──NAS──────┐
+   │                                          │      │                                             │      │           │
+   │  <app>.example.com  ──► <proxy IP>       │ ───► │  <app>.example.com  ──► <NAS IP>:<port>     │ ───► │  <app>    │
+   │                                          │      │                                             │      │           │
+   └──────────────────────────────────────────┘      └─────────────────────────────────────────────┘      └───────────┘
 ```
 
 Just keep adding entries as you extend your Services.
 
-> I could not find a way to do this in bulk so each entry was made manually, in both the Firewalla software as in the Synology one.
+> I could not find a way to do this in bulk on the Firewalla, so each DNS entry was made manually.
 
-## Enable SSL
+If you want to use your Synology NAS itself as the reverse proxy, see the [appendix](#appendix-use-your-synology-nas-as-the-reverse-proxy).
+
+## Enable Tailscale DNS Splitting
+
+In order to be able to access all devices on your network without having to install tailscale on all of those devices, you need to enable the Subnet Router on Tailscale on the device on which you did install Tailscale. In my case, that device is the Synology NAS.
+
+Make sure you are connected to your Tailscale network, then open Tailscale on your Synology. It should show your Devices and Settings. Under settings you can Advertise new routes. Enter a subnet in CIDR notation to make all those IP addresses available on the Tailscale network. For example, if your IP addresses are 192.168.1.x, you can represent them as the CIDR block 192.168.1.0/24. After advertising these, you will need to _approve_ this range in the Tailscale Admin Webpage. Go to your [list of machines](https://login.tailscale.com/admin/machines), and you should see a "subnet" tag under your synology (or whichever device is advertising your IP range). Go to the 3 dots and select "Edit route settings...". You should see subnet and you should be able to approve it (Select the checkbox).
+
+Now we need to make some changes to the tailscale DNS, so go to your [tailscale DNS settings](https://login.tailscale.com/admin/dns). First we will add a Global nameserver, pick Cloudflare Public DNS (I am actually not 100% sure this is required). This guarantees that all devices on the tailscale network will use this as their DNS. Then you want to set "Override local DNS". Finally you need to add a Custom Nameserver. Add your local DNS server's IP address as the nameserver. For me, this is my Firewalla. Then you need to enable Split DNS by enabling Restrict to domain, and set the domain to the domain of your services (e.g. `example.com`). This will route all requests for that domain through your local DNS server, and since this was setup earlier to point e.g. `sonarr.example.com` to the reverse proxy, that is what will happen. The reverse proxy will then forward this to the correct service and port (also setup earlier). So this now allows you to access your services with the same domain name from Tailscale or on your LAN locally.
+
+This [video](https://www.youtube.com/watch?v=Uzcs97XcxiE&ab_channel=KTZSystems) was very helpful.
+
+## Adding Users
+
+* Tell your users to install Tailscale and Plex
+* Invite users to your Plex and Tailscale network
+* Tell users to accept the Plex and Tailscale invite and finish creating their account
+
+When users login to their Tailscale account, they should be presented with (at least) 2 network options: their own tailscale network and the one you invited them to (your tailscale network), tell them to pick the latter.
+
+In Overseerr, go to Users and click Import Plex Users.
+
+## Enable zsh and oh-my-zsh
+
+<https://3os.org/infrastructure/synology/Install-oh-my-zsh/#change-the-default-shell-to-zsh>
+
+<https://www.reddit.com/r/synology/comments/991lg1/comment/ldxcola/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button>
+
+## Resources
+
+* <https://www.synoforum.com/resources/ultimate-starter-page-2-jellyfin-jellyseerr-nzbget-torrents-and-arr-media-library-stack.185/>
+* <https://github.com/TechHutTV/homelab/blob/main/media/arr-compose.yaml>
+* <https://github.com/qdm12/gluetun-wiki/blob/main/setup/providers/mullvad.md>
+* <https://trash-guides.info/Hardlinks/How-to-setup-for/Synology/>
+* <https://yams.media/>
+* <https://mullvad.net/en/account/wireguard-config>
+* <https://dr-b.io/post/Synology-DSM-7-with-Lets-Encrypt-and-DNS-Challenge>
+* <https://www.reddit.com/r/synology/comments/991lg1/comment/ldxcola/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button>
+* <https://3os.org/infrastructure/synology/Install-oh-my-zsh/#change-the-default-shell-to-zsh>
+
+## Appendix: Use your Synology NAS as the reverse proxy
+
+I no longer use this, but it works if you want your Synology NAS to be the reverse proxy for your services, instead of a separate one.
+
+### Reverse proxy rules in DSM
+
+In your local DNS, point the domain names of your services to the IP address of the NAS. Then, in DSM, go to Control Panel -> Login Portal -> Advanced -> Reverse Proxy. Create an entry for each service:
+
+* Source: protocol HTTPS, the domain name you entered in your DNS, port 443
+* Destination: protocol HTTP, `localhost`, the port on which your dockerized service is available
+
+> I could not find a way to do this in bulk, so each entry was made manually.
+
+### Enable SSL
 
 In order to enable ssl (https) for all services, we are going to get a wildcard certificate for our domain (`*.vilrokx.com`), which we can then use on Synology for all our subdomains that use `vilrokx.com`
 
-> Note that this requires that you have a public domain name that you need to register at a registrar, but we are not going to make anything publically available nor are we going to open up any ports. We are going to use [Let's Encrypt's DNS-01 challenge](https://letsencrypt.org/docs/challenge-types/#dns-01-challenge) and the APIs from our registrar.
+> Note that this requires that you have a public domain name that you need to register at a registrar, but we are not going to make anything publicly available nor are we going to open up any ports. We are going to use [Let's Encrypt's DNS-01 challenge](https://letsencrypt.org/docs/challenge-types/#dns-01-challenge) and the APIs from our registrar.
 
-We are going to use a script called [acme.sh](https://github.com/acmesh-official/acme.sh), which was specially developed to do this DNS-01 challenge and then we are going to use a 3rd party deploy plugin for Synology DSM from that same repo to deploy the certificates. Finally we will create a Task in the DSM Tadk Scheduler to retrieve and deploy a new certificate at a regular interval in order to avoid issues with expired certificates (Let's Encrypt certificates are only valid for 3 months)
+We are going to use a script called [acme.sh](https://github.com/acmesh-official/acme.sh), which was specially developed to do this DNS-01 challenge and then we are going to use a 3rd party deploy plugin for Synology DSM from that same repo to deploy the certificates. Finally we will create a Task in the DSM Task Scheduler to retrieve and deploy a new certificate at a regular interval in order to avoid issues with expired certificates (Let's Encrypt certificates are only valid for 3 months)
 
 Create a user in Synology DSM.
 
@@ -189,9 +230,9 @@ Now ssh into your Synology with this user:
 ssh certadmin@YOURHOSTorIPADDRESS
 ```
 
-Follow the [git installation steps for acme.sh](https://github.com/acmesh-official/acme.sh?tab=readme-ov-file#2-or-install-from-git). Since my synology box did not come with crontab setup, I got an error which can be circumvented (as per the error message) by adding the `--force` flag, so the command for me was `./acme.sh --install --force -m mvilrokx@gmail.com`
+Follow the [git installation steps for acme.sh](https://github.com/acmesh-official/acme.sh?tab=readme-ov-file#2-or-install-from-git). Since my synology box did not come with crontab setup, I got an error which can be circumvented (as per the error message) by adding the `--force` flag, so the command for me was `./acme.sh --install --force -m you@example.com` (use your own email address)
 
-Once installed, you need an API Token from your registrar that this script will use to update your DNS entries (for the DNS-01 challenge). You also need to know the Zone ID of your domain, which you shuold be able to find on your domain dashboard at your registrar. Since I am using Cloudflare as my registrar, I basically just follow [this guide](https://github.com/acmesh-official/acme.sh/wiki/dnsapi#dns_cf). However, this page has insteructions for many many more registrars, so just follow your's instructions to [get your first certificate](https://github.com/acmesh-official/acme.sh/wiki/dnsapi#getting-a-certificate). One change I had to make to this command was pick Let's Encrypt as the certificate server since acme.sh uses another provider as default, so my command looked like this:
+Once installed, you need an API Token from your registrar that this script will use to update your DNS entries (for the DNS-01 challenge). You also need to know the Zone ID of your domain, which you should be able to find on your domain dashboard at your registrar. Since I am using Cloudflare as my registrar, I basically just follow [this guide](https://github.com/acmesh-official/acme.sh/wiki/dnsapi#dns_cf). However, this page has instructions for many many more registrars, so just follow yours to [get your first certificate](https://github.com/acmesh-official/acme.sh/wiki/dnsapi#getting-a-certificate). One change I had to make to this command was pick Let's Encrypt as the certificate server since acme.sh uses another provider as default, so my command looked like this:
 
 ```shell
 ./acme.sh --server letsencrypt --issue --dns dns_cf -d '*.vilrokx.com'
@@ -227,41 +268,3 @@ Go to the Control Panel and Task Scheduler. Click Create and select Scheduled Ta
 ```shell
 /var/services/homes/certadmin/acme.sh/acme.sh --renew -d "*.vilrokx.com" --server letsencrypt
 ```
-
-## Enable Tailscale DNS Splitting
-
-In order to be able to access all devices on your network without having to install tailscale on all of those devices, you need to enable the Subnet Router on Tailscale on the device on which you did install Tailscale. In my case, that device is the Synology NAS.
-
-Make sure you are connected to your Tailscale network, then open Tailscale on your Synology. It should show your Devices and Settings. Under settings you can Advertise new routes. Enter a subnet in CIDR notation to make all those IP addresses available on the Tailscale network. In my case, my IP addresses are 192.168.19.x, which I can represent as a CIDR block with 192.168.19.0/24. After advertising these, you will need to _approve_ this range in the Tailscale Admin Webpage. Go to your [list of machines](https://login.tailscale.com/admin/machines), and you should see a "subnet" tag under your synology (or whichever devices is advertising your IP range). Go to the 3 dots and select "Edit route settings...". You should see subnet and you should be able to approve it (Select the checkbox).
-
-Now we need to make some changes to the tailscale DNS, so go to your [tailscale DNS settings](https://login.tailscale.com/admin/dns). First we will add a Global nameserver, pick Cloudflare Public DNS (I am actually not 100% sure this is required). This guarantees that all devices on the tailscale network will use this as their DNS. Then you want to set "Override local DNS". Finally you need to add a Custom Nameserver. Add your local DNS server's IP address as the nameserver. For me, this is my Firewalla, so I set it to `192.168.19.1`.  Then you need to enable Split DNS by enabling Restrict to domain, and set the domain to your local domain name, in my case `nas.lan`. This will route all request to `nas.lan` through the local DNS server (`192.168.19.1`), and since this was setup earlier to forward e.g. `plex.nas.lan` to my synology reverse proxy, that is what will happen. the reverse proxy will then forward this to the correct service and port (also setup earlier). So this now allows you to access your services with the same domain name from Tailscale or on your LAN locally.
-
-This [video](https://www.youtube.com/watch?v=Uzcs97XcxiE&ab_channel=KTZSystems) was very helpful.
-
-## Adding Users
-
-Tell your users to install Tailscale and Plex
-Invite users to your Plex and Tailscale network
-Tell users to accept the Plex and Tailscale invite and finish creating their account
-
-When users login to their Tailscale account, the should be presented with (at least) 2 network options: their own tailscale network and the one you invited them to (<mvilrokx@gmail.com> tailscale), tell them to pick the latter.
-
-Go to Overseerr's [Users](https://overseerr.nas.lan/users) and Import Plex Users
-
-## Enable zsh and oh-my-zsh
-
-<https://3os.org/infrastructure/synology/Install-oh-my-zsh/#change-the-default-shell-to-zsh>
-
-<https://www.reddit.com/r/synology/comments/991lg1/comment/ldxcola/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button>
-
-## Resources
-
-* <https://www.synoforum.com/resources/ultimate-starter-page-2-jellyfin-jellyseerr-nzbget-torrents-and-arr-media-library-stack.185/>
-* <https://github.com/TechHutTV/homelab/blob/main/media/arr-compose.yaml>
-* <https://github.com/qdm12/gluetun-wiki/blob/main/setup/providers/mullvad.md>
-* <https://trash-guides.info/Hardlinks/How-to-setup-for/Synology/>
-* <https://yams.media/>
-* <https://mullvad.net/en/account/wireguard-config>
-* <https://dr-b.io/post/Synology-DSM-7-with-Lets-Encrypt-and-DNS-Challenge>
-* <https://www.reddit.com/r/synology/comments/991lg1/comment/ldxcola/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button>
-* <https://3os.org/infrastructure/synology/Install-oh-my-zsh/#change-the-default-shell-to-zsh>
