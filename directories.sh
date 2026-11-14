@@ -2,10 +2,6 @@
 
 # Default base directory
 BASE_DIR="/volume1"
-# Make sure you create this Shared Folder in Synology DSM
-DATA_DIR="${BASE_DIR}/data"
-# If you installed Docker / Container Manager from the Package Center, this should have created this Shared Folder:
-DOCKER_DIR="${BASE_DIR}/docker"
 
 CREATE_TORRENT=false
 CREATE_USENET=false
@@ -30,7 +26,7 @@ create_media_dirs() {
 
 # Function to create appdata directories
 create_appdata_dirs() {
-    mkdir -p "$DOCKER_DIR"/appdata/{radarr,sonarr,bazarr,lidarr,readarr,plex,prowlarr,overseerr,tautulli,homepage,sabnzbd,recyclarr}
+    mkdir -p "$DOCKER_DIR"/appdata/{radarr,sonarr,bazarr,lidarr,prowlarr,overseerr,tautulli,homepage,sabnzbd,recyclarr}
     echo "Appdata directories created in $DOCKER_DIR/appdata"
 }
 
@@ -43,7 +39,7 @@ create_watch_dir() {
 # Function to display help
 display_help() {
     echo "Usage: $0 [-d base_directory] [-t] [-u] [-h]"
-    echo "  -d: Specify the base directory (default: /volume1/data)"
+    echo "  -d: Specify the base directory (default: /volume1)"
     echo "  -t: Create torrent directories"
     echo "  -u: Create usenet directories"
     echo "  -h: Display this help message"
@@ -78,6 +74,12 @@ while getopts ":d:tuh" opt; do
             ;;
     esac
 done
+
+# Set after parsing the options, so that -d also changes these paths.
+# Make sure you create this Shared Folder in Synology DSM
+DATA_DIR="${BASE_DIR}/data"
+# If you installed Docker / Container Manager from the Package Center, this should have created this Shared Folder:
+DOCKER_DIR="${BASE_DIR}/docker"
 
 # Always create media directories
 create_media_dirs
