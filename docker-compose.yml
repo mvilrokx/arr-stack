@@ -414,7 +414,7 @@ services:
       # Homepage has to run as root for auto-discovery to work
       # - PUID=${PUID}
       # - PGID=${PGID}
-      - HOMEPAGE_ALLOWED_HOSTS=home.vilrokx.com
+      - HOMEPAGE_ALLOWED_HOSTS=${DOMAIN}
       - TZ=${TZ}
       - UMASK=002
     ports:
