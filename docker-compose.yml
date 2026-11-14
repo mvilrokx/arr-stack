@@ -102,9 +102,6 @@ services:
       - homepage.widget.key=${SABNZBD_API_KEY}
       # - homepage.widget.username=${QBITTORRENT_USERNAME}
       # - homepage.widget.password=${QBITTORRENT_PASSWORD}
-    #   - org.hotio.pullio.update=${PULLIO_UPDATE}
-    #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
-    #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
     ports:
       - 8090:8080
     environment:
@@ -138,9 +135,6 @@ services:
       - homepage.widget.type=prowlarr
       - homepage.widget.url=https://prowlarr.${HOSTNAME}
       - homepage.widget.key=${PROWLARR_API_KEY}
-    #   - org.hotio.pullio.update=${PULLIO_UPDATE}
-    #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
-    #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
     ports:
       - 9696:9696
     environment:
@@ -173,9 +167,6 @@ services:
       - homepage.widget.type=radarr
       - homepage.widget.url=https://radarr.${HOSTNAME}
       - homepage.widget.key=${RADARR_API_KEY}
-    #   - org.hotio.pullio.update=${PULLIO_UPDATE}
-    #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
-    #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
     ports:
       - 7878:7878
     environment:
@@ -208,9 +199,6 @@ services:
       - homepage.widget.type=sonarr
       - homepage.widget.url=https://sonarr.${HOSTNAME}
       - homepage.widget.key=${SONARR_API_KEY}
-    #   - org.hotio.pullio.update=${PULLIO_UPDATE}
-    #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
-    #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
     ports:
       - 8989:8989
     environment:
@@ -243,9 +231,6 @@ services:
       - homepage.widget.type=lidarr
       - homepage.widget.url=https://lidarr.${HOSTNAME}
       - homepage.widget.key=${LIDARR_API_KEY}
-    #   - org.hotio.pullio.update=${PULLIO_UPDATE}
-    #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
-    #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
     ports:
       - 8686:8686
     environment:
@@ -311,9 +296,6 @@ services:
   #     - homepage.widget.type=plex
   #     - homepage.widget.url=https://plex.${HOSTNAME}
   #     - homepage.widget.key=${PLEX_API_KEY}
-  #   #   - org.hotio.pullio.update=${PULLIO_UPDATE}
-  #   #   - org.hotio.pullio.notify=${PULLIO_NOTIFY}
-  #   #   - org.hotio.pullio.discord.webhook=${PULLIO_DISCORD_WEBHOOK}
   #   # ports:
   #   #   - 32400:32400
   #   environment:
@@ -366,7 +348,7 @@ services:
     ports:
       - 5055:5055
   recyclarr:
-    image: ghcr.io/recyclarr/recyclarr
+    image: ghcr.io/recyclarr/recyclarr:8
     container_name: recyclarr
     user: ${PUID}:${PGID}
     restart: unless-stopped
