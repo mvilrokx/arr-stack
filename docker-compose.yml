@@ -3,6 +3,10 @@ services:
     # Pinned to a release: 'latest' is built from the development branch.
     image: qmcgaw/gluetun:v3.41.3
     container_name: gluetun
+    # 'always', not 'unless-stopped': when DSM restarts Container Manager, it
+    # stops each container by hand and then starts qbittorrent before gluetun,
+    # which fails. With 'always', the Docker daemon starts gluetun first.
+    restart: always
     cap_add:
       - NET_ADMIN
     devices:
