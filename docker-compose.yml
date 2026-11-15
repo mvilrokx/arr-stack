@@ -317,9 +317,10 @@ services:
   #   tmpfs: # optional: if you have a Syno with enough RAM, you can uncomment this line to enable transcoding in RAM. uncomment this line.
   #     - /transcode # optional: if you have a Syno with enough RAM, you can uncomment this line to enable transcoding in RAM. uncomment this line.
 
-  overseerr:
-    image: lscr.io/linuxserver/overseerr:latest
-    container_name: overseerr
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    init: true
+    container_name: seerr
     # network_mode: service:gluetun
     restart: unless-stopped
     logging:
@@ -329,7 +330,7 @@ services:
         max-size: ${DOCKERLOGGING_MAXSIZE}
     labels:
       - homepage.group=*Arr
-      - homepage.name=Overseerr
+      - homepage.name=Seerr
       - homepage.icon=overseerr.svg
       - homepage.href=https://overseerr.${DOMAIN}
       - homepage.description=Request Manager
@@ -337,16 +338,18 @@ services:
       - homepage.widget.url=https://overseerr.${DOMAIN}
       - homepage.widget.key=${OVERSEERR_API_KEY}
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
       - TZ=${TZ}
-      - UMASK=002
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ${DOCKERCONFDIR}/overseerr:/config
-      - ${DOCKERSTORAGEDIR}:/data
+      - ${DOCKERCONFDIR}/seerr:/app/config
     ports:
       - 5055:5055
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/settings/public || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
   recyclarr:
     image: ghcr.io/recyclarr/recyclarr:8
     container_name: recyclarr
