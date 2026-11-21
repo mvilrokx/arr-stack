@@ -60,7 +60,7 @@ services:
       - homepage.href=https://qbittorrent.${DOMAIN}
       - homepage.description=Torrent Client
       - homepage.widget.type=qbittorrent
-      - homepage.widget.url=https://qbittorrent.${DOMAIN}
+      - homepage.widget.url=http://gluetun:8080
       - homepage.widget.username=${QBITTORRENT_USERNAME}
       - homepage.widget.password=${QBITTORRENT_PASSWORD}
     environment:
@@ -98,7 +98,7 @@ services:
       - homepage.href=https://sabnzbd.${DOMAIN}
       - homepage.description=Usenet (nzb) Client
       - homepage.widget.type=sabnzbd
-      - homepage.widget.url=https://sabnzbd.${DOMAIN}
+      - homepage.widget.url=http://sabnzbd:8080
       - homepage.widget.key=${SABNZBD_API_KEY}
       # - homepage.widget.username=${QBITTORRENT_USERNAME}
       # - homepage.widget.password=${QBITTORRENT_PASSWORD}
@@ -261,7 +261,7 @@ services:
       - homepage.href=https://bazarr.${DOMAIN}
       - homepage.description=Subtitles Manager
       - homepage.widget.type=bazarr
-      - homepage.widget.url=https://bazarr.${DOMAIN}
+      - homepage.widget.url=http://bazarr:6767
       - homepage.widget.key=${BAZARR_API_KEY}
     environment:
       - PUID=${PUID}
